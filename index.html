@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MACK Legal — Dashboard</title>
+<style>
+  :root {
+    --black: #0d0d0d;
+    --charcoal: #1a1a1a;
+    --panel: #222222;
+    --border: #333333;
+    --gold: #c9a84c;
+    --gold-dim: #8a6e2f;
+    --white: #f0ede8;
+    --muted: #888888;
+    --green: #4caf7d;
+    --red: #e05c5c;
+    --amber: #e09a3a;
+    --blue: #5b9bd5;
+    --font-mono: 'SF Mono', 'Fira Code', monospace;
+    --font-body: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* NAV */
+  nav {
+    background: var(--charcoal);
+    border-bottom: 1px solid var(--border);
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 52px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .nav-brand {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .nav-tabs {
+    display: flex;
+    gap: 4px;
+  }
+
+  .nav-tab {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .nav-tab.active {
+    background: var(--panel);
+    color: var(--white);
+  }
+
+  .nav-tab:hover:not(.active) {
+    color: var(--white);
+  }
+
+  .nav-updated {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* PAGES */
+  .page { display: none; padding: 16px; max-width: 900px; margin: 0 auto; }
+  .page.active { display: block; }
+
+  /* STATS ROW */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .stat-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    text-align: center;
+  }
+
+  .stat-number {
+    font-family: var(--font-mono);
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .stat-number.gold { color: var(--gold); }
+  .stat-number.green { color: var(--green); }
+  .stat-number.red { color: var(--red); }
+
+  /* SECTION */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .section-title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .section-count {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* JOB CARDS */
+  .job-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+
+  .job-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    border-left: 3px solid var(--border);
+  }
+
+  .job-card.rush { border-left-color: var(--amber); }
+  .job-card.rush-rush { border-left-color: var(--red); }
+  .job-card.stakeout { border-left-color: var(--blue); }
+  .job-card.standard { border-left-color: var(--green); }
+
+  .job-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .job-mack {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--gold);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .job-subject {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--white);
+    flex: 1;
+  }
+
+  .job-badges {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  .badge-unpaid { background: rgba(224,92,92,0.18); color: var(--red); border: 1px solid rgba(224,92,92,0.3); }
+  .badge-paid { background: rgba(76,175,125,0.15); color: var(--green); border: 1px solid rgba(76,175,125,0.25); }
+  .badge-rush { background: rgba(224,154,58,0.18); color: var(--amber); border: 1px solid rgba(224,154,58,0.3); }
+  .badge-rush-rush { background: rgba(224,92,92,0.18); color: var(--red); border: 1px solid rgba(224,92,92,0.3); }
+  .badge-stakeout { background: rgba(91,155,213,0.18); color: var(--blue); border: 1px solid rgba(91,155,213,0.3); }
+  .badge-nodocs { background: rgba(224,154,58,0.15); color: var(--amber); border: 1px solid rgba(224,154,58,0.25); }
+
+  .job-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--muted);
+    flex-wrap: wrap;
+  }
+
+  .job-meta span { display: flex; align-items: center; gap: 4px; }
+
+  /* ATTENTION */
+  .attention-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 24px; }
+
+  .attention-item {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+  }
+
+  .attention-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .dot-red { background: var(--red); }
+  .dot-amber { background: var(--amber); }
+  .dot-blue { background: var(--blue); }
+
+  .attention-label { color: var(--muted); font-size: 12px; margin-left: auto; }
+
+  /* LOADING / ERROR */
+  .loading {
+    text-align: center;
+    padding: 40px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+
+  .loading-dot {
+    display: inline-block;
+    animation: blink 1.2s infinite;
+  }
+  .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes blink {
+    0%, 80%, 100% { opacity: 0.2; }
+    40% { opacity: 1; }
+  }
+
+  .error-banner {
+    background: rgba(224,92,92,0.12);
+    border: 1px solid rgba(224,92,92,0.3);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: var(--red);
+    font-size: 13px;
+    margin-bottom: 16px;
+    display: none;
+  }
+
+  /* TOKEN SETUP */
+  .setup-card {
+    background: var(--panel);
+    border: 1px solid var(--gold-dim);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  .setup-card h2 {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+  }
+
+  .setup-card p {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+
+  .token-input {
+    width: 100%;
+    background: var(--black);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--white);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    margin-bottom: 10px;
+    outline: none;
+  }
+
+  .token-input:focus { border-color: var(--gold-dim); }
+
+  .btn-save {
+    background: var(--gold);
+    color: var(--black);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: var(--font-body);
+  }
+
+  .btn-save:active { opacity: 0.85; }
+
+  /* PROJECTS PAGE */
+  .projects-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+
+  .project-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .project-status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+
+  .dot-active { background: var(--green); box-shadow: 0 0 6px rgba(76,175,125,0.5); }
+  .dot-next { background: var(--amber); }
+  .dot-future { background: var(--muted); }
+  .dot-done { background: var(--border); }
+  .project-card.done .project-name { text-decoration: line-through; opacity: 0.5; }
+  .project-card.done .project-desc { opacity: 0.35; }
+
+  .project-info { flex: 1; }
+
+  .project-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 3px;
+  }
+
+  .project-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .project-tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    align-self: flex-start;
+    margin-top: 2px;
+  }
+
+  .tag-active { background: rgba(76,175,125,0.15); color: var(--green); border: 1px solid rgba(76,175,125,0.25); }
+  .tag-next { background: rgba(224,154,58,0.15); color: var(--amber); border: 1px solid rgba(224,154,58,0.25); }
+  .tag-future { background: rgba(136,136,136,0.12); color: var(--muted); border: 1px solid rgba(136,136,136,0.2); }
+  .tag-done { background: rgba(76,175,125,0.08); color: var(--green); border: 1px solid rgba(76,175,125,0.15); }
+
+  .timeline-section { margin-bottom: 24px; }
+
+  .timeline-item {
+    display: flex;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .timeline-item:last-child { border-bottom: none; }
+
+  .timeline-when {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--gold);
+    width: 80px;
+    flex-shrink: 0;
+    padding-top: 2px;
+  }
+
+  .timeline-what {
+    font-size: 13px;
+    color: var(--white);
+  }
+
+  /* REFRESH BTN */
+  .refresh-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: var(--font-mono);
+  }
+  .refresh-btn:active { background: var(--panel); }
+
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">MACK Legal</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('dashboard')">Dashboard</button>
+    <button class="nav-tab" onclick="showPage('projects')">Projects</button>
+    <button class="nav-tab" onclick="showPage('goals')">Goals</button>
+    <button class="nav-tab" onclick="showPage('settings')">⚙</button>
+  </div>
+  <div class="nav-updated" id="last-updated">—</div>
+</nav>
+
+<!-- DASHBOARD PAGE -->
+<div class="page active" id="page-dashboard">
+
+  <div id="token-warning" class="setup-card" style="display:none;">
+    <h2>Airtable Token Required</h2>
+    <p>Enter your Airtable API token to load live job data. Token starts with "pat" — found at ~/token.txt on your Mac.</p>
+    <input class="token-input" id="token-input-dashboard" type="password" placeholder="pat..." />
+    <br>
+    <button class="btn-save" onclick="saveToken()">Save & Load</button>
+  </div>
+
+  <div id="error-banner" class="error-banner"></div>
+
+  <div id="dashboard-content">
+    <div class="loading">Loading<span class="loading-dot">.</span><span class="loading-dot">.</span><span class="loading-dot">.</span></div>
+  </div>
+
+</div>
+
+<!-- PROJECTS PAGE -->
+<div class="page" id="page-projects">
+  <div class="section-header" style="margin-bottom:16px;">
+    <div class="section-title">Build Tracker</div>
+    <div class="nav-updated" id="projects-updated">Loading...</div>
+  </div>
+  <div id="projects-content"><p style="color:#666;padding:20px 0;">Loading projects...</p></div>
+</div>
+
+<!-- SETTINGS PAGE -->
+
+<div class="page" id="page-goals">
+  <h2 style="color:#c9a84c;margin-bottom:20px;">Goals</h2>
+  <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px;">
+    <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-left:3px solid #c9a84c;border-radius:8px;padding:16px;">
+      <div style="color:#fff;font-weight:600;font-size:15px;">🎵 Music</div>
+      <div style="color:#aaa;font-size:13px;margin-top:4px;">Create and release music</div>
+    </div>
+    <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-left:3px solid #c9a84c;border-radius:8px;padding:16px;">
+      <div style="color:#fff;font-weight:600;font-size:15px;">🎬 Short &amp; 2-Min Videos w/ Agents</div>
+      <div style="color:#aaa;font-size:13px;margin-top:4px;">Work + music content — short form, AI-assisted production</div>
+    </div>
+  </div>
+</div>
+
+<div class="page" id="page-settings">
+  <div class="setup-card">
+    <h2>Airtable Token</h2>
+    <p>Your token starts with "pat" — found at ~/token.txt on your Mac. Stored locally in your browser only.</p>
+    <input class="token-input" id="token-input-settings" type="password" placeholder="pat..." />
+    <br>
+    <button class="btn-save" onclick="saveTokenFromSettings()">Save Token</button>
+  </div>
+  <div style="font-size:12px; color: var(--muted); line-height:1.7;">
+    <div style="margin-bottom:6px;"><span style="color:var(--gold); font-family:var(--font-mono);">Base ID:</span> appvnviHqt155NagF</div>
+    <div style="margin-bottom:6px;"><span style="color:var(--gold); font-family:var(--font-mono);">Jobs:</span> tblINyBTKoDPaxInh</div>
+    <div><span style="color:var(--gold); font-family:var(--font-mono);">Attempts:</span> tblJLZKb1Fr61RQia</div>
+  </div>
+</div>
+
+<script>
+const BASE_ID = 'appvnviHqt155NagF';
+const JOBS_TABLE = 'tblINyBTKoDPaxInh';
+
+// Field names (API returns by name, not ID)
+const F = {
+  display:     'Job Display',
+  subject:     'Subject Name',
+  mackNum:     'Case ID',
+  stage:       'Stage',
+  paid:        '$',
+  docs:        'Docs Recvd?',
+  serviceType: 'Srvce Type',
+  serveAddr:   'Serve Addr',
+  notes:       'Notes',
+  startDate:   "fldBTDbH0uvbZDU1d",
+  showMaster:  "Show in MASTER",
+  stageAuto:   "Stage (Auto)",
+
+};
+
+function isNetlify() { return window.location.hostname.includes('netlify'); }
+function getToken() { return localStorage.getItem('mack_airtable_token') || ''; }
+function hasAccess() { return isNetlify() || getToken(); }
+
+function saveToken() {
+  const t = document.getElementById('token-input-dashboard').value.trim();
+  if (!t) return;
+  localStorage.setItem('mack_airtable_token', t);
+  document.getElementById('token-warning').style.display = 'none';
+  loadDashboard();
+}
+
+function saveTokenFromSettings() {
+  const t = document.getElementById('token-input-settings').value.trim();
+  if (!t) return;
+  localStorage.setItem('mack_airtable_token', t);
+  alert('Token saved.');
+}
+
+
+function proxyFetch(airtableUrl, token) {
+  if (window.location.hostname.includes('netlify')) {
+    const rest = airtableUrl.replace('https://api.airtable.com/v0/', '');
+    const qIdx = rest.indexOf('?');
+    const path = qIdx >= 0 ? rest.substring(0, qIdx) : rest;
+    const qs = qIdx >= 0 ? rest.substring(qIdx + 1) : '';
+    const proxyUrl = '/api/airtable?path=' + encodeURIComponent(path) + (qs ? '&qs=' + encodeURIComponent(qs) : '');
+    return fetch(proxyUrl);
+  }
+  return fetch(airtableUrl, { headers: { Authorization: 'Bearer ' + token } });
+}
+
+function loadProjects() {
+  const token = getToken();
+  if (!hasAccess()) {
+    document.getElementById('projects-content').innerHTML = '<p style="color:#c9a84c;padding:20px 0;">No Airtable token — enter it in ⚙ Settings.</p>';
+    return;
+  }
+  const BASE = 'appvnviHqt155NagF';
+  const TABLE = 'tblrNDhaIq78yx3kO';
+  const url = `https://api.airtable.com/v0/${BASE}/${TABLE}?pageSize=100&sort[0][field]=Sort+Order&sort[0][direction]=asc`;
+  proxyFetch(url, token)
+    .then(r => r.json())
+    .then(data => {
+      const records = (data.records || []).map(r => r.fields);
+      const order = ['Active','Next Up','Operational','Future','Cancelled','Completed'];
+      const groups = {};
+      order.forEach(s => groups[s] = []);
+      records.forEach(r => {
+        const statusVal = r['Status'];
+        const s = (statusVal && typeof statusVal === 'object') ? statusVal.name : (statusVal || 'Future');
+        if (groups[s]) groups[s].push(r);
+      });
+      const dotClass = { 'Active':'dot-active', 'Next Up':'dot-next', 'Operational':'dot-done', 'Completed':'dot-done', 'Future':'dot-future', 'Cancelled':'dot-future' };
+      const tagClass = { 'Active':'tag-active', 'Next Up':'tag-next', 'Operational':'tag-done', 'Completed':'tag-done', 'Future':'tag-future', 'Cancelled':'tag-future' };
+      const tagLabel = { 'Active':'Active', 'Next Up':'Next Up', 'Operational':'✓ Live', 'Completed':'✓ Done', 'Future':'Future', 'Cancelled':'Cancelled' };
+      const sectionLabel = { 'Active':'Active', 'Next Up':'Next Up', 'Operational':'Operational', 'Completed':'Completed', 'Future':'Future Builds', 'Cancelled':'Cancelled' };
+      let html = '';
+      order.forEach(status => {
+        if (!groups[status] || groups[status].length === 0) return;
+        html += `<div class="section-header"><div class="section-title">${sectionLabel[status]}</div></div>`;
+        html += `<div class="projects-grid" style="margin-bottom:20px;">`;
+        groups[status].forEach(r => {
+          const name = r['Name'] || '';
+          const desc = r['Description'] || '';
+          const doneClass = status === 'Completed' ? ' done' : '';
+          html += `<div class="project-card${doneClass}">
+            <div class="project-status-dot ${dotClass[status]}"></div>
+            <div class="project-info">
+              <div class="project-name">${name}</div>
+              <div class="project-desc">${desc}</div>
+            </div>
+            <div class="project-tag ${tagClass[status]}">${tagLabel[status]}</div>
+          </div>`;
+        });
+        html += `</div>`;
+      });
+      document.getElementById('projects-content').innerHTML = html;
+      document.getElementById('projects-updated').textContent = 'Live from Airtable';
+    })
+    .catch(e => {
+      document.getElementById('projects-content').innerHTML = `<p style="color:#c44;padding:20px 0;">Error loading projects: ${e.message}</p>`;
+    });
+}
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  event.target.classList.add('active');
+  if (id === 'dashboard') loadDashboard();
+  if (id === 'projects') loadProjects();
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-banner');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function hideError() { document.getElementById('error-banner').style.display = 'none'; }
+
+// Get a field value — handles both string and {name, ...} object formats
+function fval(record, fieldId) {
+  const v = record[fieldId];
+  if (v === undefined || v === null) return '';
+  if (typeof v === 'object' && !Array.isArray(v)) return v.name || '';
+  if (Array.isArray(v)) return v.map(i => typeof i === 'object' ? i.name : i).join(', ');
+  return String(v);
+}
+
+async function fetchJobs(token) {
+  const fields = Object.values(F).map(id => 'fields%5B%5D=' + encodeURIComponent(id)).join('&');
+  const url = `https://api.airtable.com/v0/${BASE_ID}/${JOBS_TABLE}?${fields}&pageSize=100`;
+  const res = await proxyFetch(url, token);
+  if (!res.ok) throw new Error(`Airtable error ${res.status}`);
+  const data = await res.json();
+  // Airtable REST API returns records[].fields
+  return (data.records || []).map(r => {
+    var fields = r.fields || {};
+    fields._createdTime = r.createdTime;
+    return fields;
+  });
+}
+
+function renderDashboard(records) {
+  // Use Stage (Auto) formula field directly from Airtable — matches master view exactly
+  function getStageAuto(r) {
+    return fval(r, F.stageAuto) || fval(r, F.stage);
+  }
+
+  // Replicate master view filter: Show in MASTER is not empty AND Stage (Auto) is not Completed
+  var STAGES = ['New', 'Attempting', 'Pending - Start Date', 'Served - Need POS', 'Served - Need Both', 'Served - Unpaid'];
+  var all = records.filter(function(r) {
+    var showMaster = fval(r, F.showMaster);
+    var stageAuto = getStageAuto(r);
+    // Must be flagged for master AND not completed
+    if (!showMaster || showMaster === '0' || showMaster === 'false') return false;
+    if (stageAuto === 'Completed' || stageAuto === 'Cancelled') return false;
+    return STAGES.indexOf(stageAuto) >= 0;
+  });
+  var unpaid = all.filter(function(r) { var p = fval(r, F.paid); return p === '🔴' || p === 'Unpaid' || p === ''; });
+  var rush = all.filter(function(r) { return fval(r, F.serviceType).toLowerCase().indexOf('rush') >= 0; });
+
+  var html = '<div class="stats-row">'
+    + '<div class="stat-card"><div class="stat-number gold">' + all.length + '</div><div class="stat-label">Total Jobs</div></div>'
+    + '<div class="stat-card"><div class="stat-number red">' + unpaid.length + '</div><div class="stat-label">Unpaid</div></div>'
+    + '<div class="stat-card"><div class="stat-number amber">' + rush.length + '</div><div class="stat-label">Rush</div></div>'
+    + '</div>';
+
+  var STAGE_LABELS = {
+    'New': 'New',
+    'Attempting': 'Attempting',
+    'Pending - Start Date': 'Pending — Start Date',
+    'Served - Unpaid': 'Served — Unpaid',
+    'Served - UnP/POS needed': 'Served — Unpaid + POS Needed',
+    'Served -  POS needed': 'Served — POS Needed',
+    'Served - w/f POS': 'Served — w/f POS'
+  };
+  STAGES.forEach(function(stageName, si) {
+    var group = all.filter(function(r) { return getStageAuto(r) === stageName; });
+    if (!group.length) return;
+
+    html += '<div class="section-header" style="margin-top:16px;">'
+      + '<div class="section-title">' + stageName + '</div>'
+      + '<div style="display:flex;gap:8px;align-items:center;">'
+      + '<div class="section-count">' + group.length + '</div>'
+      + (si === 0 ? '<button class="refresh-btn" onclick="loadDashboard()">↻</button>' : '')
+      + '</div></div><div class="job-list">';
+
+    group.forEach(function(r) {
+      var subject = fval(r, F.subject);
+      var mackNum = fval(r, F.mackNum);
+      var svcType = fval(r, F.serviceType);
+      var paidVal = fval(r, F.paid);
+      var docs    = fval(r, F.docs);
+      var display = fval(r, F.display);
+      var city    = display.split(' | ')[2] || '';
+      var isPaid  = paidVal === '🟢' || paidVal === 'Paid';
+      var svcLow  = svcType.toLowerCase();
+      var cardClass = svcLow.indexOf('rush rush') >= 0 ? 'rush-rush' : svcLow.indexOf('rush') >= 0 ? 'rush' : svcLow.indexOf('stakeout') >= 0 ? 'stakeout' : 'standard';
+      var svcBadge  = svcLow.indexOf('rush rush') >= 0 ? 'badge-rush-rush' : svcLow.indexOf('rush') >= 0 ? 'badge-rush' : svcLow.indexOf('stakeout') >= 0 ? 'badge-stakeout' : '';
+
+      html += '<div class="job-card ' + cardClass + '">'
+        + '<div class="job-top"><div>'
+        + (mackNum ? '<div class="job-mack">' + mackNum + '</div>' : '')
+        + '<div class="job-subject">' + (subject || mackNum) + '</div>'
+        + '</div><div class="job-badges">'
+        + '<span class="badge ' + (isPaid ? 'badge-paid' : 'badge-unpaid') + '">' + (isPaid ? 'Paid' : 'Unpaid') + '</span>'
+        + (svcType && svcType !== 'Standard' && svcBadge ? '<span class="badge ' + svcBadge + '">' + svcType + '</span>' : '')
+        + (!docs ? '<span class="badge badge-nodocs">No Docs</span>' : '')
+        + '</div></div>'
+        + '<div class="job-meta">' + (city ? '<span>📍 ' + city + '</span>' : '') + '</div>'
+        + '</div>';
+    });
+
+    html += '</div>';
+  });
+
+  document.getElementById('dashboard-content').innerHTML = html;
+  document.getElementById('last-updated').textContent = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+}
+
+
+async function loadDashboard() {
+  const token = getToken();
+  if (!hasAccess()) {
+    document.getElementById('dashboard-content').innerHTML = '';
+    document.getElementById('token-warning').style.display = 'block';
+    return;
+  }
+  document.getElementById('token-warning').style.display = 'none';
+  hideError();
+  document.getElementById('dashboard-content').innerHTML = `
+    <div class="loading">Loading<span class="loading-dot">.</span><span class="loading-dot">.</span><span class="loading-dot">.</span></div>`;
+  try {
+    const records = await fetchJobs(token);
+    renderDashboard(records);
+  } catch(err) {
+    showError('Could not load jobs — ' + err.message);
+    document.getElementById('dashboard-content').innerHTML = '';
+  }
+}
+
+window.addEventListener('load', () => {
+  const saved = getToken();
+  if (saved) {
+    const inp = document.getElementById('token-input-settings');
+    if (inp) inp.value = saved;
+  }
+  if (hasAccess()) {
+    loadDashboard();
+  } else {
+    document.getElementById('dashboard-content').innerHTML = '';
+    document.getElementById('token-warning').style.display = 'block';
+  }
+});
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
